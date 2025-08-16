@@ -11,27 +11,27 @@ import {
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import useMonthlyRevenue from "./useMonthlyData";
+import { useEffect, useState } from "react";
 
 export const description = "Revenue bar chart (₦)";
 
 // Monthly revenue data
-const data = [
-  { month: "Jan", revenue: 300000 },
-  { month: "Feb", revenue: 450000 },
-  { month: "Mar", revenue: 370000 },
-  { month: "Apr", revenue: 280000 },
-  { month: "May", revenue: 190000 },
-  { month: "Jun", revenue: 120000 },
-  { month: "Jul", revenue: 110000 },
-  { month: "Aug", revenue: 115000 },
-  { month: "Sep", revenue: 195000 },
-  { month: "Oct", revenue: 150000 },
-  { month: "Nov", revenue: 150000 },
-  { month: "Dec", revenue: 0 },
-];
 
 export function RevenueBarChart() {
-  const chartData = useMonthlyRevenue();
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 640);
+    };
+
+    handleResize(); // check on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  let chartData = useMonthlyRevenue();
+  chartData = isSmallScreen ? chartData.slice(0, 7) : chartData;
+
   return (
     <Card className="md:p-8 h-auto md:h-[600px] md:bg-muted-foreground/10">
       <CardHeader>
@@ -70,7 +70,7 @@ export function RevenueBarChart() {
               <p>
                 <span className="text-2xl font-bold mr-3">
                   $
-                  {data
+                  {chartData
                     .reduce((sum, item) => sum + item.revenue, 0)
                     .toLocaleString()}
                 </span>
@@ -80,7 +80,7 @@ export function RevenueBarChart() {
             <ResponsiveContainer>
               <BarChart
                 data={chartData}
-                barCategoryGap={20}
+                barCategoryGap={isSmallScreen ? 10 : 70}
                 margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
               >
                 <CartesianGrid vertical={false} />
